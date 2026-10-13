@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SnapMarket Pulse — Dashboard Wireframes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script type="text/babel" src="design-canvas.jsx"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1a1a; }
+  </style>
+</head>
+<body style="font-family: Caveat">
+<div id="root"></div>
+<script type="text/babel">
+
+const { useState } = React;
+
+// ─── Wireframe tokens ────────────────────────────────────────────────────────
+const T = {
+  orange: '#F57F2E',
+  orangeSoft: '#FFF1E6',
+  orangeHard: '#E0701F',
+  ink: '#1E1C1A',
+  gray: '#888580',
+  grayLight: '#C5C1BA',
+  border: '#D8D4CC',
+  bg: '#F5F2EC',
+  white: '#FFFFFF',
+  dark: '#1E1C1A',
+  success: '#0B5D3B',
+  danger: '#B4261A',
+  warning: '#8A5200',
+  info: '#0B3D91',
+  font: "'Caveat', cursive"
+};
+
+// ─── Shared atoms ─────────────────────────────────────────────────────────────
+
+const Box = ({ children, s, dashed, dark, accent }) =>
+<div style={{
+  border: `2px ${dashed ? 'dashed' : 'solid'} ${dark ? 'rgba(255,255,255,0.12)' : dashed ? T.grayLight : T.border}`,
+  borderRadius: 12,
+  background: dark ? 'rgba(255,255,255,0.05)' : accent ? T.orangeSoft : T.white,
+  ...s
+}}>{children}</div>;
+
+
+const Pill = ({ children, active, sm }) =>
+<span style={{
+  display: 'inline-flex', alignItems: 'center',
+  padding: sm ? '3px 12px' : '5px 18px',
+  borderRadius: 999,
+  border: `2px solid ${active ? T.orange : T.border}`,
+  background: active ? T.orangeSoft : 'transparent',
+  color: active ? T.orange : T.gray,
+  fontFamily: T.font,
+  fontWeight: active ? 700 : 600,
+  fontSize: sm ? 14 : 15,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap'
+}}>{children}</span>;
+
+
+const Chip = ({ children, color }) =>
+<span style={{
+  display: 'inline-block', padding: '2px 9px', borderRadius: 4,
+  border: `1.5px solid ${color || T.border}`,
+  color: color || T.gray,
+  fontFamily: T.font, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap'
+}}>{children}</span>;
+
+
+const Label = ({ children }) =>
+<div style={{ fontFamily: T.font, fontSize: 11, color: T.gray, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>{children}</div>;
+
+
+const AiBadge = () =>
+<span style={{
+  display: 'inline-flex', alignItems: 'center', gap: 4,
+  background: 'linear-gradient(100deg,#F57F2E,#E84C85)', color: 'white',
+  borderRadius: 999, padding: '2px 10px',
+  fontFamily: T.font, fontSize: 12, fontWeight: 700
+}}>✦ AI</span>;
+
+
+const Stat = ({ label, value, delta, accent, s }) =>
+<Box s={{ padding: '14px 16px', ...s }}>
+    <Label>{label}</Label>
+    <div style={{ fontFamily: T.font, fontSize: 30, fontWeight: 700, color: accent ? T.orange : T.ink, lineHeight: 1.1, margin: '4px 0 2px' }}>{value}</div>
+    {delta && <div style={{ fontFamily: T.font, fontSize: 13, color: delta.includes('↑') && !delta.includes('rate') ? T.success : delta.includes('↓') ? T.danger : T.gray }}>{delta}</div>}
+  </Box>;
+
+
+const MiniBar = ({ pct }) =>
+<div style={{ height: 3, background: '#EEE', borderRadius: 2 }}>
+    <div style={{ height: '100%', width: `${pct}%`, background: T.orange, borderRadius: 2 }} />
+  </div>;
+
+
+const SourceTag = ({ src }) => {
+  const colors = { Reddit: '#FF4500', X: '#1DA1F2', Fed: '#0B3D91', News: '#555', Redfin: '#CC0000', Zillow: '#006AFF', MLS: '#2D6A4F' };
+  return <Chip color={colors[src] || T.gray}>{src}</Chip>;
+};
+
+const Signal = ({ src, text, sub, time, border = true }) =>
+<div style={{ padding: '10px 0', borderBottom: border ? `1.5px solid #EEEBE5` : 'none', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+    <SourceTag src={src} />
+    <div style={{ flex: 1 }}>
+      <div style={{ fontFamily: T.font, fontSize: 14, color: T.ink, lineHeight: 1.35, fontWeight: 600 }}>{text}</div>
+      {sub && <div style={{ fontFamily: T.font, fontSize: 11, color: T.gray, marginTop: 2 }}>{sub}</div>}
+    </div>
+    {time && <div style={{ fontFamily: T.font, fontSize: 11, color: T.grayLight, flexShrink: 0, paddingTop: 2 }}>{time}</div>}
+  </div>;
+
+
+const NavBar = ({ title, role, setRole, location }) =>
+<div style={{ padding: '12px 24px', background: T.white, borderBottom: `2px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
+    <div style={{ fontFamily: T.font, fontWeight: 700, fontSize: 18, color: T.ink }}>
+      SnapMarket <span style={{ color: T.orange }}>Pulse</span>
+    </div>
+    {location && <div style={{ fontFamily: T.font, fontSize: 13, color: T.gray, border: `1.5px solid ${T.border}`, borderRadius: 999, padding: '2px 12px' }}>📍 {location}</div>}
+    <div style={{ flex: 1 }} />
+    <div style={{ display: 'flex', gap: 6 }}>
+      {['Agent', 'Buyer', 'Seller'].map((r) =>
+    <Pill key={r} active={role === r} sm onClick={() => setRole(r)}>{r}</Pill>
+    )}
+    </div>
+    <div style={{ fontFamily: T.font, fontSize: 13, color: T.gray }}>May 30</div>
+  </div>;
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PERSONA DATA — drives all 4 layouts
+// ─────────────────────────────────────────────────────────────────────────────
+const PERSONA = {
+  Agent: {
+    greeting: 'Good morning, Sarah',
+    brief: `"Inventory tightened for the 3rd straight week. Buyers are active but stuck on rates — Reddit is screaming about buydowns, not price. The Fed is holding in June. This is your window to list. Two new price drops in Westlake match your buyer criteria exactly."`,
+    tags: ['↑ Seller window open', '⚠ Rate sensitivity high', '🏠 Inventory tight'],
+    direction: '↑ Seller-leaning',
+    rateSignal: '↔ Hold expected',
+    buyerSentiment: '⚠ Rate-sensitive',
+    stats: [
+    { label: '30yr Rate', value: '6.87%', delta: '↑ +0.12 this week' },
+    { label: 'Inventory', value: '1,840', delta: '↓ −12% vs last mo.' },
+    { label: 'Price Drops', value: '847', delta: '↑ +34 today', accent: true },
+    { label: 'Buyer Demand', value: 'High', delta: '↑ above avg', accent: true }],
+
+    actions: [
+    { text: 'Send rate update to 4 buyer clients', icon: '📞', p: 'High' },
+    { text: 'Review 3 price drops in Westlake matching buyers', icon: '🏠', p: 'High' },
+    { text: 'Share Fed hold signal with seller pipeline', icon: '📊', p: 'Medium' },
+    { text: 'Engage 2 Reddit threads in your zip code', icon: '💬', p: 'Low' }],
+
+    signals: [
+    { src: 'Reddit', text: '"Rates feel impossible — anyone getting buydowns under 5%?"', sub: 'r/FirstTimeHomeBuyer · 847 upvotes', time: '2m' },
+    { src: 'Fed', text: '2 FOMC officials signal June rate hold — no cut until Sept.', sub: 'Reuters', time: '1h' },
+    { src: 'News', text: 'Austin inventory drops 3rd consecutive week — Board of Realtors', sub: 'Austin American-Statesman', time: '3h' },
+    { src: 'X', text: '"Toured 8 homes. Nothing under $450k has a garage in Austin"', sub: '@homebuyer_austin · 234 likes', time: '20m' },
+    { src: 'Redfin', text: 'Barton Hills median +3.2% in 30d vs Austin avg +0.4%', sub: 'redfin.com data', time: '6h' },
+    { src: 'Reddit', text: '"My agent suggested a buydown — worth it at current rates?"', sub: 'r/RealEstate · 512 upvotes', time: '45m' },
+    { src: 'News', text: 'Mortgage applications down 8% nationally week-over-week', sub: 'Mortgage Bankers Assoc.', time: '4h' }]
+
+  },
+  Buyer: {
+    greeting: 'Find your moment, Alex',
+    brief: `"Rates are at 6.87% — still elevated, but the Fed is holding, not raising. 847 homes dropped price this week, and inventory is tighter than last month. If you're ready, competition is real but manageable. Waiting for sub-6% may mean waiting through summer bidding wars."`,
+    tags: ['↔ Rates holding', '↑ Competition building', '✅ 847 price drops now'],
+    direction: '↑ Buyer active',
+    rateSignal: '↔ No June cut',
+    buyerSentiment: '⚠ Competitive',
+    stats: [
+    { label: '30yr Rate Today', value: '6.87%', delta: '↑ +0.12 this week' },
+    { label: 'Price Drops', value: '847', delta: '↑ +34 today', accent: true },
+    { label: 'Affordability', value: '$3,420/mo', delta: '↑ $180 vs last yr' },
+    { label: 'Listings in Range', value: '214', delta: '↓ −8% vs last mo.' }],
+
+    actions: [
+    { text: 'Review 12 new listings in your saved search', icon: '🏠', p: 'High' },
+    { text: 'Ask lender about buydown options at 6.87%', icon: '💰', p: 'High' },
+    { text: 'Schedule tours for 3 price-dropped homes', icon: '📅', p: 'Medium' },
+    { text: 'Read: why buyers are acting now despite rates', icon: '📖', p: 'Low' }],
+
+    signals: [
+    { src: 'Reddit', text: '"Just locked at 6.5% with a 1pt buydown — worth it in this market"', sub: 'r/FirstTimeHomeBuyer · 1.2k upvotes', time: '5m' },
+    { src: 'Fed', text: 'Fed holds rates — experts say earliest cut is September 2026', sub: 'Wall Street Journal', time: '1h' },
+    { src: 'News', text: 'Affordability slightly improves as sellers compete for fewer buyers', sub: 'Bloomberg', time: '2h' },
+    { src: 'X', text: '"Price drops are finally happening. Watched 3 homes cut price today"', sub: '@austinhomehunt · 89 likes', time: '30m' },
+    { src: 'Zillow', text: 'Buyer demand index: 64/100 in Austin — elevated but not peak', sub: 'zillow.com/research', time: '8h' },
+    { src: 'Reddit', text: '"Is now actually a good time to buy? Breaking down my math..."', sub: 'r/personalfinance · 2.1k upvotes', time: '3h' },
+    { src: 'MLS', text: '214 homes in $350k–$550k range active in Austin metro today', sub: 'ACTRIS MLS data', time: '6h' }]
+
+  },
+  Seller: {
+    greeting: "It's a seller's moment, Jamie",
+    brief: `"Buyers are searching but hitting rate walls — they want your home, they're just nervous about financing. Inventory is shrinking, which means less competition for you. Reddit shows buyers are focused on move-in ready homes with no surprises. Price it sharp and move fast — the June window is real."`,
+    tags: ['↑ Low competition', '✅ Buyers actively searching', '🔑 List now signal'],
+    direction: '↑ Seller-favorable',
+    rateSignal: '↔ Hold = urgency',
+    buyerSentiment: '↑ Motivated',
+    stats: [
+    { label: 'Active Competition', value: '1,840', delta: '↓ −12% vs last mo.' },
+    { label: 'Buyer Searches', value: '↑ High', delta: '↑ 3-wk trend', accent: true },
+    { label: 'Avg Days on Mkt', value: '28 days', delta: '↑ +3 vs last mo.' },
+    { label: 'List-to-Sale', value: '97.2%', delta: '↓ −0.8pt vs last mo.' }],
+
+    actions: [
+    { text: 'Buyers want move-in ready — fix the big 3 items', icon: '🔧', p: 'High' },
+    { text: 'Price to attract: 2% under Zestimate opens bidding', icon: '💰', p: 'High' },
+    { text: 'List this week to catch the June buyer wave', icon: '📅', p: 'Medium' },
+    { text: 'Offer 1pt buydown — top Reddit buyer request this week', icon: '📊', p: 'Medium' }],
+
+    signals: [
+    { src: 'Reddit', text: '"Why are sellers holding at these prices with rates so high?"', sub: 'r/RealEstate · 940 upvotes', time: '1h' },
+    { src: 'X', text: '"Open house this weekend in Bouldin was PACKED. Multiple offers"', sub: '@atxagent · 512 likes', time: '3h' },
+    { src: 'News', text: 'Fewer sellers listing = tighter supply = stronger position for those who do', sub: 'Inman News', time: '5h' },
+    { src: 'Zillow', text: 'Homes priced within 2% of market median sell 4x faster in Austin', sub: 'zillow.com/research', time: '12h' },
+    { src: 'Reddit', text: '"Sellers offering buydowns are getting offers in days, not weeks"', sub: 'r/FirstTimeHomeBuyer · 1.8k upvotes', time: '2h' },
+    { src: 'MLS', text: 'Average seller concession in Austin metro: $8,400 this quarter', sub: 'ACTRIS MLS data', time: '8h' },
+    { src: 'News', text: 'Move-in ready homes sell 22% faster than homes needing work — Redfin', sub: 'redfin.com', time: '1d' }]
+
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A · COMMAND CENTER  (sidebar + grid)
+// ─────────────────────────────────────────────────────────────────────────────
+function CommandCenter() {
+  const [role, setRole] = useState('Agent');
+  const d = PERSONA[role];
+
+  return (
+    <div style={{ display: 'flex', width: '100%', height: '100%', background: T.bg, fontFamily: T.font }}>
+      {/* Sidebar */}
+      <div style={{ width: 200, background: T.white, borderRight: `2px solid ${T.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+        <div style={{ padding: '18px 18px 16px', borderBottom: `1.5px solid ${T.border}` }}>
+          <div style={{ fontSize: 17, fontWeight: 700, color: T.ink }}>SnapMarket</div>
+          <div style={{ fontSize: 15, color: T.orange, fontWeight: 700 }}>Pulse ✦</div>
+        </div>
+        {/* Role */}
+        <div style={{ padding: '14px 16px', borderBottom: `1.5px solid ${T.border}` }}>
+          <Label>My Role</Label>
+          <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {['Agent', 'Buyer', 'Seller'].map((r) =>
+            <div key={r} onClick={() => setRole(r)} style={{ padding: '6px 10px', borderRadius: 6, background: r === role ? T.orangeSoft : 'transparent', color: r === role ? T.orange : T.gray, fontWeight: r === role ? 700 : 500, fontSize: 15, cursor: 'pointer', border: r === role ? `1.5px solid ${T.orange}` : '1.5px solid transparent' }}>
+                {r === role ? '● ' : '○ '}{r}
+              </div>
+            )}
+          </div>
+        </div>
+        {/* Nav */}
+        <div style={{ padding: '14px 16px', flex: 1 }}>
+          <Label>Views</Label>
+          <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {[{ l: 'Overview', a: true }, { l: 'Market Intel' }, { l: 'Source Feed' }, { l: 'Price Trends' }, { l: 'Alerts', badge: '3' }].map(({ l, a, badge }) =>
+            <div key={l} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 10px', borderRadius: 6, background: a ? T.orangeSoft : 'transparent', color: a ? T.orange : T.ink, fontWeight: a ? 700 : 500, fontSize: 15, cursor: 'pointer' }}>
+                <span>{l}</span>
+                {badge && <span style={{ background: T.orange, color: 'white', borderRadius: 999, padding: '1px 7px', fontSize: 11 }}>{badge}</span>}
+              </div>
+            )}
+          </div>
+        </div>
+        <div style={{ padding: '12px 16px', borderTop: `1.5px solid ${T.border}` }}>
+          <div style={{ fontSize: 13, color: T.gray }}>📍 Austin, TX</div>
+          <div style={{ fontSize: 11, color: T.grayLight }}>tap to change</div>
+        </div>
+      </div>
+
+      {/* Main */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        {/* Topbar */}
+        <div style={{ padding: '14px 22px', borderBottom: `1.5px solid ${T.border}`, background: T.white, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: T.ink }}>{d.greeting} 👋</div>
+            <div style={{ fontSize: 13, color: T.gray }}>Friday, May 30 · Austin market is <span style={{ color: T.orange, fontWeight: 700 }}>active</span></div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <AiBadge />
+            <div style={{ fontFamily: T.font, fontSize: 13, color: T.gray, border: `1.5px solid ${T.border}`, borderRadius: 6, padding: '5px 12px' }}>⚙ Settings</div>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, padding: 18, display: 'flex', flexDirection: 'column', gap: 14, overflow: 'hidden', fontFamily: "Comfortaa" }}>
+          {/* Stats */}
+          <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+            {d.stats.map((s) => <Stat key={s.label} label={s.label} value={s.value} delta={s.delta} accent={s.accent} s={{ flex: 1 }} />)}
+          </div>
+
+          {/* Middle row */}
+          <div style={{ display: 'flex', gap: 14, flex: 1, minHeight: 0 }}>
+            {/* AI Brief */}
+            <Box s={{ flex: 2, padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <AiBadge />
+                <span style={{ fontSize: 13, color: T.gray }}>Today's Market Brief · {role} View</span>
+              </div>
+              <div style={{ fontSize: 17, color: T.ink, lineHeight: 1.5, fontWeight: 600, flex: 1 }}>{d.brief}</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {d.tags.map((t) => <Chip key={t} color={T.orange}>{t}</Chip>)}
+              </div>
+              {/* Mini chart */}
+              <div style={{ height: 56, display: 'flex', alignItems: 'flex-end', gap: 3, background: '#F8F6F0', borderRadius: 6, padding: '8px 10px 8px' }}>
+                {[55, 40, 65, 50, 75, 60, 80, 68, 85, 72, 90, 78].map((h, i) =>
+                <div key={i} style={{ flex: 1, background: i === 11 ? T.orange : '#DDD', borderRadius: '3px 3px 0 0', height: `${h}%` }} />
+                )}
+              </div>
+            </Box>
+
+            {/* Actions */}
+            <Box s={{ flex: 1, padding: 18, display: 'flex', flexDirection: 'column', gap: 0 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: T.ink, marginBottom: 10 }}>Act Today</div>
+              {d.actions.map(({ text, icon, p }, i) =>
+              <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '9px 0', borderBottom: i < d.actions.length - 1 ? `1.5px solid #EEE` : 'none' }}>
+                  <div style={{ width: 18, height: 18, border: `2px solid ${T.border}`, borderRadius: 4, flexShrink: 0, marginTop: 1 }} />
+                  <div>
+                    <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.3 }}>{text}</div>
+                    <Chip color={p === 'High' ? T.orange : p === 'Medium' ? T.warning : T.grayLight}>{p}</Chip>
+                  </div>
+                </div>
+              )}
+              <div style={{ marginTop: 'auto', paddingTop: 12 }}>
+                <div style={{ background: T.orange, color: 'white', borderRadius: 8, padding: '8px 14px', fontFamily: T.font, fontWeight: 700, fontSize: 15, textAlign: 'center', cursor: 'pointer' }}>+ Add Action</div>
+              </div>
+            </Box>
+          </div>
+
+          {/* Signal feed preview */}
+          <Box s={{ padding: '12px 16px', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>Live Signals</span>
+              <span style={{ fontSize: 13, color: T.orange, cursor: 'pointer' }}>See all →</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0 20px' }}>
+              {d.signals.slice(0, 3).map((s, i) => <Signal key={i} {...s} border={false} />)}
+            </div>
+          </Box>
+        </div>
+      </div>
+    </div>);
+
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// B · INTELLIGENCE BRIEF  (editorial / no sidebar)
+// ─────────────────────────────────────────────────────────────────────────────
+function IntelBrief() {
+  const [role, setRole] = useState('Agent');
+  const d = PERSONA[role];
+
+  return (
+    <div style={{ width: '100%', height: '100%', background: T.bg, fontFamily: T.font, display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
+      <div style={{ padding: '12px 32px', borderBottom: `2px solid ${T.border}`, background: T.white, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ fontSize: 20, fontWeight: 700, color: T.ink }}>SnapMarket <span style={{ color: T.orange }}>Pulse</span></div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {['Agent', 'Buyer', 'Seller'].map((r) => <Pill key={r} active={role === r} sm onClick={() => setRole(r)}>{r}</Pill>)}
+        </div>
+        <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+          <span style={{ fontSize: 14, color: T.gray }}>📍 Austin, TX</span>
+          <span style={{ fontSize: 14, color: T.gray, border: `1.5px solid ${T.border}`, padding: '3px 10px', borderRadius: 6 }}>↻ Updated 9:42am</span>
+        </div>
+      </div>
+
+      {/* Hero brief */}
+      <div style={{ padding: '18px 32px', background: T.orangeSoft, borderBottom: `2px solid #F0D8B8`, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 11, color: T.orange, textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700, marginBottom: 6 }}>✦ Today's Brief · {role} View</div>
+            <div style={{ fontSize: 21, fontWeight: 700, color: T.ink, lineHeight: 1.45, maxWidth: 680 }}>{d.brief}</div>
+            <div style={{ fontSize: 12, color: T.gray, marginTop: 8 }}>Based on 847 signals from Reddit, X, 12 news sources & Federal Reserve data · <span style={{ color: T.orange }}>see all sources →</span></div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
+            {[
+            { l: 'Market Direction', v: d.direction, c: T.orange },
+            { l: 'Rate Signal', v: d.rateSignal, c: T.gray },
+            { l: 'Buyer Sentiment', v: d.buyerSentiment, c: T.warning }].
+            map(({ l, v, c }) =>
+            <Box key={l} s={{ padding: '8px 14px', minWidth: 200, background: T.white }}>
+                <Label>{l}</Label>
+                <div style={{ fontSize: 16, fontWeight: 700, color: c, marginTop: 3 }}>{v}</div>
+              </Box>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Three columns */}
+      <div style={{ flex: 1, padding: '18px 32px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, minHeight: 0, overflow: 'hidden' }}>
+        {/* Col 1: Numbers */}
+        <div>
+          <div style={{ fontSize: 12, color: T.gray, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ color: T.orange }}>▪</span> By the Numbers
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {d.stats.map((s) =>
+            <Box key={s.label} s={{ padding: '10px 14px' }}>
+                <Label>{s.label}</Label>
+                <div style={{ fontSize: 22, fontWeight: 700, color: s.accent ? T.orange : T.ink, marginTop: 3 }}>{s.value}</div>
+                <div style={{ fontSize: 12, color: T.gray }}>{s.delta}</div>
+              </Box>
+            )}
+            <Box s={{ padding: '10px 14px' }}>
+              <Label>Avg Days on Market</Label>
+              <div style={{ fontSize: 22, fontWeight: 700, color: T.ink, marginTop: 3 }}>28 days</div>
+              <div style={{ fontSize: 12, color: T.gray }}>↑ +3 vs last month</div>
+            </Box>
+          </div>
+        </div>
+
+        {/* Col 2: Signals */}
+        <div>
+          <div style={{ fontSize: 12, color: T.gray, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ color: T.orange }}>▪</span> Top Signals
+          </div>
+          <div>
+            {d.signals.slice(0, 5).map((s, i) => <Signal key={i} {...s} />)}
+          </div>
+        </div>
+
+        {/* Col 3: Actions */}
+        <div>
+          <div style={{ fontSize: 12, color: T.gray, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ color: T.orange }}>▪</span> Act Today
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {d.actions.map(({ text, icon, p }, i) =>
+            <Box key={i} s={{ padding: '12px 14px', borderLeft: `4px solid ${p === 'High' ? T.orange : p === 'Medium' ? '#F5C842' : T.border}` }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 18 }}>{icon}</span>
+                  <div>
+                    <div style={{ fontSize: 14, color: T.ink, lineHeight: 1.35, marginBottom: 4 }}>{text}</div>
+                    <Chip color={p === 'High' ? T.orange : p === 'Medium' ? T.warning : T.grayLight}>{p} priority</Chip>
+                  </div>
+                </div>
+              </Box>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>);
+
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// C · SIGNAL STREAM  (split: live feed | digest panel)
+// ─────────────────────────────────────────────────────────────────────────────
+function SignalStream() {
+  const [role, setRole] = useState('Agent');
+  const [filter, setFilter] = useState('All');
+  const d = PERSONA[role];
+  const filters = ['All', 'Reddit', 'X', 'News', 'Fed', 'Redfin'];
+  const filtered = filter === 'All' ? d.signals : d.signals.filter((s) => s.src === filter);
+
+  return (
+    <div style={{ width: '100%', height: '100%', background: T.bg, fontFamily: T.font, display: 'flex', flexDirection: 'column' }}>
+      <NavBar role={role} setRole={setRole} location="Austin, TX" />
+
+      <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
+        {/* Left: Feed */}
+        <div style={{ flex: '0 0 58%', borderRight: `2px solid ${T.border}`, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          {/* Filter bar */}
+          <div style={{ padding: '10px 20px', borderBottom: `1.5px solid ${T.border}`, background: T.white, display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 13, color: T.gray, marginRight: 4 }}>Filter:</span>
+            {filters.map((f) => <Pill key={f} active={filter === f} sm onClick={() => setFilter(f)}>{f}</Pill>)}
+            <div style={{ marginLeft: 'auto', fontSize: 13, color: T.gray }}>↑ relevance</div>
+          </div>
+
+          {/* Signals */}
+          <div style={{ flex: 1, padding: '0 20px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            {(filtered.length ? filtered : d.signals).map((s, i) =>
+            <div key={i} style={{ padding: '11px 0', borderBottom: `1.5px solid #EEEBE5`, display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }}>
+                <SourceTag src={s.src} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 15, color: T.ink, fontWeight: 600, lineHeight: 1.3, marginBottom: 2 }}>{s.text}</div>
+                  <div style={{ fontSize: 11, color: T.gray }}>{s.sub}</div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                  <span style={{ fontSize: 11, color: T.grayLight }}>{s.time}</span>
+                  <span style={{ fontSize: 11, color: T.orange }}>view →</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right: Digest */}
+        <div style={{ flex: 1, padding: 18, display: 'flex', flexDirection: 'column', gap: 14, overflow: 'hidden' }}>
+          {/* AI Digest */}
+          <Box s={{ padding: 18 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <AiBadge />
+              <span style={{ fontSize: 13, color: T.gray }}>{role} Digest · May 30</span>
+            </div>
+            <div style={{ fontSize: 16, color: T.ink, lineHeight: 1.6, fontWeight: 500 }}>{d.brief}</div>
+            <div style={{ fontSize: 11, color: T.grayLight, marginTop: 10 }}>847 signals · 6 sources · 9:42am</div>
+          </Box>
+
+          {/* Stat grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {d.stats.map((s) => <Stat key={s.label} label={s.label} value={s.value} delta={s.delta} accent={s.accent} />)}
+          </div>
+
+          {/* Source breakdown */}
+          <Box s={{ padding: '14px 16px' }}>
+            <Label>Signals by source</Label>
+            <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+              { src: 'Reddit', count: 312, pct: 74 },
+              { src: 'News', count: 218, pct: 52 },
+              { src: 'X', count: 187, pct: 44 },
+              { src: 'Fed Data', count: 89, pct: 21 },
+              { src: 'Redfin/Zillow', count: 41, pct: 10 }].
+              map(({ src, count, pct }) =>
+              <div key={src}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: T.ink, marginBottom: 3 }}>
+                    <span>{src}</span><span style={{ color: T.gray }}>{count}</span>
+                  </div>
+                  <MiniBar pct={pct} />
+                </div>
+              )}
+            </div>
+          </Box>
+        </div>
+      </div>
+    </div>);
+
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// D · BENTO GRID  (mosaic / tile layout)
+// ─────────────────────────────────────────────────────────────────────────────
+function BentoGrid() {
+  const [role, setRole] = useState('Agent');
+  const d = PERSONA[role];
+
+  return (
+    <div style={{ width: '100%', height: '100%', background: '#EDEAE3', fontFamily: T.font, display: 'flex', flexDirection: 'column' }}>
+      <NavBar role={role} setRole={setRole} location="Austin, TX" />
+
+      <div style={{ flex: 1, padding: 14, display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gridTemplateRows: '1fr 1fr 130px', gap: 12, minHeight: 0 }}>
+
+        {/* AI Brief — dark tile, spans 2 rows */}
+        <div style={{ gridRow: '1 / 3', background: T.dark, borderRadius: 16, padding: 22, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <AiBadge />
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', fontFamily: T.font }}>{role} Brief · Today</span>
+          </div>
+          <div style={{ fontSize: 19, fontWeight: 700, color: '#F5F2EC', lineHeight: 1.45, flex: 1 }}>
+            {d.brief.replace(/"/g, '').split('. ').map((sentence, i, arr) =>
+            <span key={i}>
+                {i === arr.length - 2 ?
+              <span style={{ color: T.orange }}>{sentence}.</span> :
+              i < arr.length - 1 ? sentence + '. ' : sentence}
+              </span>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {d.tags.map((t) =>
+            <span key={t} style={{ border: '1.5px solid rgba(255,255,255,0.18)', borderRadius: 999, padding: '3px 12px', fontSize: 13, color: 'rgba(255,255,255,0.65)', fontFamily: T.font }}>{t}</span>
+            )}
+          </div>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', fontFamily: T.font }}>847 signals · 6 sources · updated 9:42am</div>
+        </div>
+
+        {/* Rate tile */}
+        <Box s={{ padding: 16, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <Label>{d.stats[0].label}</Label>
+          <div style={{ fontSize: 38, fontWeight: 700, color: T.ink }}>{d.stats[0].value}</div>
+          <div>
+            <div style={{ fontSize: 13, color: T.danger, marginBottom: 6 }}>{d.stats[0].delta}</div>
+            <MiniBar pct={65} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: T.grayLight, marginTop: 3 }}>
+              <span>5.5% low</span><span>7.2% high</span>
+            </div>
+          </div>
+        </Box>
+
+        {/* Inventory tile */}
+        <Box s={{ padding: 16, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <Label>{d.stats[1].label}</Label>
+          <div style={{ fontSize: 38, fontWeight: 700, color: T.ink }}>{d.stats[1].value}</div>
+          <div>
+            <div style={{ fontSize: 13, color: T.success }}>{d.stats[1].delta}</div>
+            <div style={{ fontSize: 11, color: T.grayLight, marginTop: 4 }}>Tightest since Mar '24</div>
+          </div>
+        </Box>
+
+        {/* Accent stat tile */}
+        <Box s={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 6 }} accent>
+          <Label>{d.stats[2].label}</Label>
+          <div style={{ fontSize: 36, fontWeight: 700, color: T.orange }}>{d.stats[2].value}</div>
+          <div style={{ fontSize: 13, color: T.orange }}>{d.stats[2].delta}</div>
+          <div style={{ marginTop: 'auto', border: `1.5px solid ${T.orange}`, borderRadius: 6, padding: '5px 10px', color: T.orange, fontSize: 13, fontWeight: 600, textAlign: 'center' }}>View all →</div>
+        </Box>
+
+        {/* Demand gauge tile */}
+        <Box s={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <Label>{d.stats[3].label}</Label>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', gap: 4 }}>
+            {['Very Low', 'Low', 'Average', 'High', 'Very High'].map((lvl, i) =>
+            <div key={lvl} style={{ height: 22, background: lvl === 'High' ? T.orange : lvl === 'Very High' ? '#F5DFC0' : '#EEE', borderRadius: 4, display: 'flex', alignItems: 'center', paddingLeft: 8, fontSize: 12, color: lvl === 'High' ? 'white' : T.gray, fontWeight: lvl === 'High' ? 700 : 400 }}>{lvl}</div>
+            )}
+          </div>
+        </Box>
+
+        {/* Bottom: Signal strip — full width */}
+        <Box s={{ gridColumn: '1 / -1', padding: '12px 18px', display: 'flex', flexDirection: 'column', gap: 0, background: T.white }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexShrink: 0 }}>
+            <span style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>Top Signals Today</span>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {['All', 'Reddit', 'X', 'News', 'Fed'].map((f, i) => <Pill key={f} active={i === 0} sm>{f}</Pill>)}
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0 24px', flex: 1 }}>
+            {d.signals.slice(0, 3).map((s, i) =>
+            <div key={i} style={{ display: 'flex', gap: 8, paddingTop: 4, alignItems: 'flex-start' }}>
+                <SourceTag src={s.src} />
+                <div>
+                  <div style={{ fontSize: 13, color: T.ink, lineHeight: 1.3, fontWeight: 600 }}>{s.text}</div>
+                  <div style={{ fontSize: 11, color: T.gray, marginTop: 2 }}>{s.time} · <span style={{ color: T.orange }}>view source</span></div>
+                </div>
+              </div>
+            )}
+          </div>
+        </Box>
+      </div>
+    </div>);
+
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROOT
+// ─────────────────────────────────────────────────────────────────────────────
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="dashboards" title="SnapMarket Pulse — Dashboard Wireframes" subtitle="4 approaches · switch Agent / Buyer / Seller inside each · click to focus fullscreen">
+        <DCArtboard id="cmd" label="A · Command Center" width={1400} height={860}><CommandCenter /></DCArtboard>
+        <DCArtboard id="brief" label="B · Intelligence Brief" width={1400} height={860}><IntelBrief /></DCArtboard>
+        <DCArtboard id="stream" label="C · Signal Stream" width={1400} height={860}><SignalStream /></DCArtboard>
+        <DCArtboard id="bento" label="D · Bento Grid" width={1400} height={860}><BentoGrid /></DCArtboard>
+      </DCSection>
+    </DesignCanvas>);
+
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

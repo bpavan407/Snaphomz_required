@@ -1,0 +1,13 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/collect?secret=cef84a5d1271cfeb50bb32a294e4ad1f7bfafcf3ad02d0157f5c1256102fd971",
+      "schedule": "0 9 * * *"
+    }
+  ],
+  "functions": {
+    "app/api/cron/collect/route.ts": {
+      "maxDuration": 180
+    }
+  }
+}

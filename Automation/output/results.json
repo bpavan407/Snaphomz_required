@@ -1,0 +1,142 @@
+[
+  {
+    "lead": {
+      "name": "Sarah Johnson",
+      "email": "sarah@example.com",
+      "buyer_type": "first_time_buyer",
+      "city": "Austin TX",
+      "pain_point": "overwhelmed by too many options online"
+    },
+    "subject": "",
+    "body": "",
+    "status": "error",
+    "emailStatus": "error",
+    "error": "401 {\"error\":{\"message\":\"Invalid API Key\",\"type\":\"invalid_request_error\",\"code\":\"invalid_api_key\"}}"
+  },
+  {
+    "lead": {
+      "name": "Michael Chen",
+      "email": "michael@example.com",
+      "buyer_type": "investor",
+      "city": "Dallas TX",
+      "pain_point": "finding undervalued properties before they sell"
+    },
+    "subject": "",
+    "body": "",
+    "status": "error",
+    "emailStatus": "error",
+    "error": "401 {\"error\":{\"message\":\"Invalid API Key\",\"type\":\"invalid_request_error\",\"code\":\"invalid_api_key\"}}"
+  },
+  {
+    "lead": {
+      "name": "Priya Patel",
+      "email": "priya@example.com",
+      "buyer_type": "relocating",
+      "city": "Seattle WA",
+      "pain_point": "searching remotely without knowing the neighborhoods"
+    },
+    "subject": "",
+    "body": "",
+    "status": "error",
+    "emailStatus": "error",
+    "error": "401 {\"error\":{\"message\":\"Invalid API Key\",\"type\":\"invalid_request_error\",\"code\":\"invalid_api_key\"}}"
+  },
+  {
+    "lead": {
+      "name": "James Wilson",
+      "email": "james@example.com",
+      "buyer_type": "upsizing",
+      "city": "Denver CO",
+      "pain_point": "needs more space for growing family but budget is tight"
+    },
+    "subject": "",
+    "body": "",
+    "status": "error",
+    "emailStatus": "error",
+    "error": "401 {\"error\":{\"message\":\"Invalid API Key\",\"type\":\"invalid_request_error\",\"code\":\"invalid_api_key\"}}"
+  },
+  {
+    "lead": {
+      "name": "Maria Garcia",
+      "email": "maria@example.com",
+      "buyer_type": "downsizing",
+      "city": "Phoenix AZ",
+      "pain_point": "wants smaller low-maintenance home after kids moved out"
+    },
+    "subject": "",
+    "body": "",
+    "status": "error",
+    "emailStatus": "error",
+    "error": "401 {\"error\":{\"message\":\"Invalid API Key\",\"type\":\"invalid_request_error\",\"code\":\"invalid_api_key\"}}"
+  },
+  {
+    "lead": {
+      "name": "David Kim",
+      "email": "david@example.com",
+      "buyer_type": "first_time_buyer",
+      "city": "Chicago IL",
+      "pain_point": "confused about mortgage process and what to look for"
+    },
+    "subject": "",
+    "body": "",
+    "status": "error",
+    "emailStatus": "error",
+    "error": "401 {\"error\":{\"message\":\"Invalid API Key\",\"type\":\"invalid_request_error\",\"code\":\"invalid_api_key\"}}"
+  },
+  {
+    "lead": {
+      "name": "Emily Rodriguez",
+      "email": "emily@example.com",
+      "buyer_type": "relocating",
+      "city": "Miami FL",
+      "pain_point": "moving for new job and needs to find home fast"
+    },
+    "subject": "",
+    "body": "",
+    "status": "error",
+    "emailStatus": "error",
+    "error": "401 {\"error\":{\"message\":\"Invalid API Key\",\"type\":\"invalid_request_error\",\"code\":\"invalid_api_key\"}}"
+  },
+  {
+    "lead": {
+      "name": "Robert Thompson",
+      "email": "robert@example.com",
+      "buyer_type": "investor",
+      "city": "Nashville TN",
+      "pain_point": "looking for properties with good rental income potential"
+    },
+    "subject": "",
+    "body": "",
+    "status": "error",
+    "emailStatus": "error",
+    "error": "401 {\"error\":{\"message\":\"Invalid API Key\",\"type\":\"invalid_request_error\",\"code\":\"invalid_api_key\"}}"
+  },
+  {
+    "lead": {
+      "name": "Lisa Anderson",
+      "email": "lisa@example.com",
+      "buyer_type": "upsizing",
+      "city": "Portland OR",
+      "pain_point": "current home too small after having a baby"
+    },
+    "subject": "",
+    "body": "",
+    "status": "error",
+    "emailStatus": "error",
+    "error": "401 {\"error\":{\"message\":\"Invalid API Key\",\"type\":\"invalid_request_error\",\"code\":\"invalid_api_key\"}}"
+  },
+  {
+    "lead": {
+      "name": "Alex Brown",
+      "email": "alex@example.com",
+      "buyer_type": "first_time_buyer",
+      "city": "San Antonio TX",
+      "pain_point": "worried about affording a home in this market"
+    },
+    "subject": "",
+    "body": "",
+    "status": "error",
+    "emailStatus": "error",
+    "error": "401 {\"error\":{\"message\":\"Invalid API Key\",\"type\":\"invalid_request_error\",\"code\":\"invalid_api_key\"}}"
+  }
+]
